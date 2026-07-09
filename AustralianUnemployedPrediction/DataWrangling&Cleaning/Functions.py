@@ -4,17 +4,16 @@ import string
 
 # Functions
 # extract metadata from the original dataset
-def extract_matadata (dataset: pd.DataFrame):
-    dataset_original = dataset.copy()
+def extract_metadata (dataset: pd.DataFrame):
     
     # Extract the first eight rows into metadata and transpose the matrix
-    mata_data = dataset_original.iloc[:9].T
+    meta_data = dataset.iloc[:9].copy().T
 
     # reset index
-    mata_data_reindex = mata_data.reset_index()
+    meta_data = meta_data.reset_index()
 
     # extract first row and use it as column names
-    new_columns = list(mata_data_reindex.iloc[0])
+    new_columns = list(meta_data.iloc[0])
 
     # update column format
     for i in range(len(new_columns)):
@@ -29,8 +28,8 @@ def extract_matadata (dataset: pd.DataFrame):
         new_columns[i] = punctuation_removed.replace(' ', '_')
         
     # assign, remove first row, reset index
-    mata_data_reindex.columns = new_columns
-    mata_data_updated_columns = mata_data_reindex.iloc[1:].reset_index(drop = True)
+    meta_data.columns = new_columns
+    mata_data_updated_columns = meta_data.iloc[1:].reset_index(drop = True)
 
     # update the first column name
     first_column = mata_data_updated_columns.columns[0]
@@ -70,15 +69,15 @@ def extract_matadata (dataset: pd.DataFrame):
     return mata_data_updated_columns
 
 # melt and update the columns names
-def melt_and_update_columns(dataset: pd.DataFrame):
+def melt_and_update_columns(dataset: pd.DataFrame, value: str):
     # get data below row 9 where stored series ID, values and record date
-    value = dataset.iloc[9:]
+    value_dataset = dataset.iloc[9:].copy()
 
     # Get series ID
     series_id = dataset.loc[8]
     
     # use series ID as new columnnames
-    value_series_id = value.rename(columns = series_id)
+    value_series_id = value_dataset.rename(columns = series_id)
 
     # update the first column name to 'date'
     value_date = value_series_id.rename(columns = {'Series ID': 'date'})
@@ -91,6 +90,8 @@ def melt_and_update_columns(dataset: pd.DataFrame):
         value_name='value'
     )
 
+    value_melted['state'] = value
+
     return value_melted
 
 # merge the metadata and the melted dataset
@@ -101,12 +102,12 @@ def merge_metadata_and_melted_dataset(
 ):
 
     # select column to merge
-    selected_matadata = metadata[selected_columns]
+    selected_metadata = metadata[selected_columns]
 
     # Merge df1 and df2 using the shared column 'series_id'
     final_dataset = pd.merge(
         melted_dataset, 
-        selected_matadata, 
+        selected_metadata, 
         on='series_id', 
         how='left'
     )
