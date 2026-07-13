@@ -3,6 +3,22 @@ import pandas as pd
 import string
 
 # Functions
+# Update the column names of the dataset
+def update_column_names(dataset: pd.DataFrame):
+    column_names = dataset.columns.tolist()
+    for i in range(len(column_names)):
+        column_name = column_names[i].lower()
+        punctuation_removed = column_name.translate(
+            str.maketrans(
+                '',
+                '',
+                string.punctuation.replace('_', '')
+            )
+        )
+        column_names[i] = punctuation_removed.replace(' ', '_')
+    dataset.columns = column_names
+    return dataset
+
 # extract metadata from the original dataset
 def extract_metadata (dataset: pd.DataFrame):
     
@@ -22,7 +38,7 @@ def extract_metadata (dataset: pd.DataFrame):
             str.maketrans(
                 '',
                 '',
-                string.punctuation
+                string.punctuation.replace('_', '')
             )
         )
         new_columns[i] = punctuation_removed.replace(' ', '_')
